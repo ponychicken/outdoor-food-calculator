@@ -9,6 +9,10 @@ interface CompactAnalysisProps {
 
 export function CompactAnalysis({ nutrition, profile }: CompactAnalysisProps) {
   const completions = calculateCompletionPercentages(nutrition, profile)
+  const proteinTarget = (profile.caloriesPerDay * (profile.proteinPercent / 100)) / 4
+  const carbsTarget = (profile.caloriesPerDay * (profile.carbsPercent / 100)) / 4
+  const fatTarget = (profile.caloriesPerDay * (profile.fatPercent / 100)) / 9
+  const fiberTarget = (profile.caloriesPerDay / 1000) * profile.fiberPer1000cal
 
   const getBarColor = (percentage: number) => {
     if (percentage >= 90) return "bg-green-500"
@@ -28,22 +32,22 @@ export function CompactAnalysis({ nutrition, profile }: CompactAnalysisProps) {
       label: "Pro",
       percentage: completions.protein,
       current: nutrition.dailyProtein,
-      target: profile.proteinPerDay,
+      target: proteinTarget,
       unit: "g",
     },
     {
       label: "Carb",
       percentage: completions.carbs,
       current: nutrition.dailyCarbs,
-      target: profile.carbsPerDay,
+      target: carbsTarget,
       unit: "g",
     },
-    { label: "Fat", percentage: completions.fat, current: nutrition.dailyFat, target: profile.fatPerDay, unit: "g" },
+    { label: "Fat", percentage: completions.fat, current: nutrition.dailyFat, target: fatTarget, unit: "g" },
     {
       label: "Fib",
       percentage: completions.fiber,
       current: nutrition.dailyFiber,
-      target: profile.fiberPerDay,
+      target: fiberTarget,
       unit: "g",
     },
   ]

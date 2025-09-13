@@ -166,6 +166,14 @@ export const useStorage = () => {
     }
   }
 
+  const clearCurrentCalculation = async (): Promise<void> => {
+    try {
+      await AsyncStorage.removeItem(STORAGE_KEYS.CURRENT_CALCULATION)
+    } catch (error) {
+      console.error("Error clearing current calculation:", error)
+    }
+  }
+
   return {
     getProfiles,
     saveProfile,
@@ -178,5 +186,6 @@ export const useStorage = () => {
     deleteCalculation,
     getCurrentCalculation,
     saveCurrentCalculation,
+    clearCurrentCalculation,
   }
 }
