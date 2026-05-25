@@ -2,7 +2,7 @@
 
 import { Feather } from "@expo/vector-icons"
 import { CameraView, useCameraPermissions } from "expo-camera"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { View, Text, TextInput, TouchableOpacity, ScrollView, Modal, Alert, StyleSheet, Platform } from "react-native"
 import type { FoodItem, CalculationItem } from "../types"
 import { mapCategory } from "../utils/categoryMapper"
@@ -23,6 +23,8 @@ export function FoodSelector({ visible, onClose, onAddFood }: FoodSelectorProps)
   const [amount, setAmount] = useState("100")
   const [isScanning, setIsScanning] = useState(false)
   const [permission, requestPermission] = useCameraPermissions()
+  const searchInputRef = useRef<TextInput>(null)
+  const incrementButtonRef = useRef<any>(null)
   const storage = useStorage()
 
   const categories = ["all", "grains", "nuts", "meat", "dairy", "vegetables", "other"]
@@ -36,6 +38,26 @@ export function FoodSelector({ visible, onClose, onAddFood }: FoodSelectorProps)
   useEffect(() => {
     filterFoods()
   }, [foods, searchQuery, selectedCategory])
+
+  useEffect(() => {
+    if (visible && !selectedFood) {
+      const timeoutId = setTimeout(() => {
+        searchInputRef.current?.focus()
+      }, 0)
+
+      return () => clearTimeout(timeoutId)
+    }
+  }, [visible, selectedFood])
+
+  useEffect(() => {
+    if (selectedFood) {
+      const timeoutId = setTimeout(() => {
+        incrementButtonRef.current?.focus?.()
+      }, 0)
+
+      return () => clearTimeout(timeoutId)
+    }
+  }, [selectedFood])
 
   const loadFoods = async () => {
     const loadedFoods = await storage.getFoods()
@@ -75,6 +97,10 @@ export function FoodSelector({ visible, onClose, onAddFood }: FoodSelectorProps)
     const currentAmount = Number.parseFloat(amount) || 0
     const newAmount = Math.max(0, currentAmount + delta)
     setAmount(newAmount.toString())
+  }
+
+  const handleSelectFood = (food: FoodItem) => {
+    setSelectedFood(food)
   }
 
   const handleScanPress = async () => {
@@ -171,10 +197,12 @@ export function FoodSelector({ visible, onClose, onAddFood }: FoodSelectorProps)
             <View className="p-4">
               <View className="flex-row items-center gap-2 mb-4">
                 <TextInput
+                  ref={searchInputRef}
                   className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-text"
                   placeholder="Search foods..."
                   value={searchQuery}
                   onChangeText={setSearchQuery}
+                  autoFocus={visible && !selectedFood}
                 />
                 <TouchableOpacity onPress={handleScanPress}>
                   <Feather name="camera" size={28} className="text-primary" />
@@ -205,7 +233,7 @@ export function FoodSelector({ visible, onClose, onAddFood }: FoodSelectorProps)
                 <TouchableOpacity
                   key={food.id}
                   className="p-4 bg-white rounded-lg border border-gray-200 mb-3"
-                  onPress={() => setSelectedFood(food)}
+                  onPress={() => handleSelectFood(food)}
                 >
                   <Text className="text-lg font-semibold text-text">{food.name}</Text>
                   <Text className="text-sm text-text-secondary">
@@ -263,6 +291,7 @@ export function FoodSelector({ visible, onClose, onAddFood }: FoodSelectorProps)
                 />
 
                 <TouchableOpacity
+                  ref={incrementButtonRef}
                   className="bg-gray-200 w-12 h-12 rounded-full items-center justify-center"
                   onPress={() => adjustAmount(100)}
                 >

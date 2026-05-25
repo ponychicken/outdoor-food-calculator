@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from "react"
 import { View, Text, ScrollView, Alert } from "react-native"
+import * as Clipboard from "expo-clipboard"
 import type { Calculation, NutritionProfile, FoodItem } from "../src/types"
 import { useStorage } from "../src/hooks/useStorage"
 import { CalculationCard } from "../src/components/CalculationCard"
 import { router } from "expo-router"
+import { buildCalculationPlainText } from "../src/utils/calculationExport"
 
 export default function CalculationsScreen() {
   const [calculations, setCalculations] = useState<Calculation[]>([])
@@ -62,6 +64,18 @@ export default function CalculationsScreen() {
     ])
   }
 
+  const handleCopyCalculation = async (calculation: Calculation) => {
+    const profile = profiles.find((p) => p.id === calculation.profileId)
+    const text = buildCalculationPlainText({
+      calculation,
+      foods,
+      profile,
+    })
+
+    await Clipboard.setStringAsync(text)
+    Alert.alert("Copied", "Calculation copied as plain text.")
+  }
+
   return (
     <View className="flex-1 bg-background">
       <ScrollView className="p-4">
@@ -86,6 +100,7 @@ export default function CalculationsScreen() {
                   foods={foods}
                   onLoad={handleLoadCalculation}
                   onDelete={handleDeleteCalculation}
+                  onCopy={handleCopyCalculation}
                 />
               )
             })}

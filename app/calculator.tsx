@@ -3,6 +3,7 @@
 import { Feather } from "@expo/vector-icons"
 import { useState, useEffect } from "react"
 import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert } from "react-native"
+import * as Clipboard from "expo-clipboard"
 import type { NutritionProfile, FoodItem, CalculationItem, NutritionSummary, Calculation } from "../src/types"
 import { useStorage } from "../src/hooks/useStorage"
 import { FoodSelector } from "../src/components/FoodSelector"
@@ -10,6 +11,7 @@ import { CalculationItem as CalculationItemComponent } from "../src/components/C
 import { calculateNutrition } from "../src/utils/nutritionCalculator"
 import { LiveAnalysis } from "../src/components/LiveAnalysis"
 import { SaveCalculationModal } from "../src/components/SaveCalculationModal"
+import { buildCalculationPlainText } from "../src/utils/calculationExport"
 
 export default function CalculatorScreen() {
   const [profiles, setProfiles] = useState<NutritionProfile[]>([])
@@ -144,6 +146,28 @@ export default function CalculatorScreen() {
     setIsSaveModalVisible(true)
   }
 
+  const handleCopyResults = async () => {
+    if (items.length === 0 || !nutrition) {
+      Alert.alert("Nothing to copy", "Add some food items first.")
+      return
+    }
+
+    const text = buildCalculationPlainText({
+      calculation: {
+        name: currentCalculation?.name || "Current Calculation",
+        days: Number.parseFloat(days) || 1,
+        items,
+        profileId: selectedProfile?.id || "",
+      },
+      foods,
+      profile: selectedProfile,
+      nutrition,
+    })
+
+    await Clipboard.setStringAsync(text)
+    Alert.alert("Copied", "Calculation copied as plain text.")
+  }
+
   const totalWeight = items.reduce((sum, item) => sum + item.amount, 0)
 
   return (
@@ -154,6 +178,9 @@ export default function CalculatorScreen() {
             <Text className="text-2xl font-bold text-text">Food Calculator</Text>
             {items.length > 0 && (
               <View className="flex-row gap-4">
+                <TouchableOpacity onPress={handleCopyResults}>
+                  <Text className="text-primary text-base font-medium">Copy</Text>
+                </TouchableOpacity>
                 <TouchableOpacity onPress={handleSavePress}>
                   <Text className="text-primary text-base font-medium">Save</Text>
                 </TouchableOpacity>

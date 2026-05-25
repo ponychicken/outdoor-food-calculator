@@ -9,9 +9,10 @@ interface CalculationCardProps {
   foods: FoodItem[]
   onLoad: (calculation: Calculation) => void
   onDelete: (calculationId: string) => void
+  onCopy: (calculation: Calculation) => void
 }
 
-export function CalculationCard({ calculation, profile, foods, onLoad, onDelete }: CalculationCardProps) {
+export function CalculationCard({ calculation, profile, foods, onLoad, onDelete, onCopy }: CalculationCardProps) {
   const nutrition = calculateNutrition(calculation.items, foods, calculation.days)
   const totalItems = calculation.items.reduce((sum, item) => sum + item.amount, 0)
 
@@ -37,9 +38,14 @@ export function CalculationCard({ calculation, profile, foods, onLoad, onDelete 
             {calculation.days} days • {calculation.items.length} food types • {Math.round(totalItems / 1000)}kg total
           </Text>
         </View>
-        <TouchableOpacity onPress={() => onDelete(calculation.id)}>
-          <Feather name="trash-2" size={20} className="text-red-500" />
-        </TouchableOpacity>
+        <View className="flex-row items-center gap-3">
+          <TouchableOpacity onPress={() => onCopy(calculation)}>
+            <Feather name="copy" size={20} className="text-primary" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => onDelete(calculation.id)}>
+            <Feather name="trash-2" size={20} className="text-red-500" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {profile && (
